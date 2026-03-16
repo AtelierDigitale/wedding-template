@@ -8,27 +8,27 @@ const nextConfig: NextConfig = {
       return [
         {
           source: "/api/inviti",
-          destination: `${apiUrl}/api/inviti.php`,
+          destination: `${apiUrl}/siteground-api/api/inviti.php`,
         },
         {
           source: "/api/invito",
-          destination: `${apiUrl}/api/invito.php`,
+          destination: `${apiUrl}/siteground-api/api/invito.php`,
         },
         {
           source: "/api/conferma",
-          destination: `${apiUrl}/api/conferma.php`,
+          destination: `${apiUrl}/siteground-api/api/conferma.php`,
         },
         {
           source: "/api/upload",
-          destination: `${apiUrl}/api/upload.php`,
+          destination: `${apiUrl}/siteground-api/api/upload.php`,
         },
         {
           source: "/api/gallery",
-          destination: `${apiUrl}/api/gallery.php`,
+          destination: `${apiUrl}/siteground-api/api/gallery.php`,
         },
         {
           source: "/api/gruppi",
-          destination: `${apiUrl}/api/gruppi.php`,
+          destination: `${apiUrl}/siteground-api/api/gruppi.php`,
         },
       ];
     }
