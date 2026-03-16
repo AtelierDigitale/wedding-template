@@ -156,8 +156,7 @@ export default function InvitoPage() {
           <p className="text-6xl">🎉</p>
           <h1 className="mt-4 font-heading text-2xl text-marrone">Grazie!</h1>
           <p className="mt-2 text-grigio">
-            La vostra risposta è stata registrata. Non vediamo l&apos;ora di
-            festeggiare insieme!
+            Non vediamo l&apos;ora di festeggiare insieme!
           </p>
           <p className="mt-4 text-sm text-grigio">
             29 Agosto 2026 · Ca&apos; Ross, Formigine
@@ -184,7 +183,7 @@ export default function InvitoPage() {
         priority
       />
 
-      <h1 className="mt-8 font-heading text-5xl text-marrone md:text-7xl">
+      <h1 className="mt-8 text-center font-heading text-5xl text-marrone md:text-7xl">
         Marcella e Francesco
       </h1>
 
