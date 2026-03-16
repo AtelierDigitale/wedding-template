@@ -36,6 +36,18 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local dev database
+dev.sqlite
+
+# uploaded photos (local dev)
+/public/uploads/
+
+# photoshop files
+*.psd
+
+# siteground config (contains DB credentials)
+siteground-api/config.php
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
