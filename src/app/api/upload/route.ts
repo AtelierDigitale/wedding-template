@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb, saveDb } from "@/lib/local-db";
-import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
-import path from "path";
+import { proxyToBackend } from "@/lib/api-proxy";
 
 export async function POST(req: NextRequest) {
+  const proxied = await proxyToBackend(req, "upload.php");
+  if (proxied) return proxied;
+
   try {
+    const { v4: uuidv4 } = await import("uuid");
+    const fs = await import("fs");
+    const path = await import("path");
+
     const formData = await req.formData();
     const foto = formData.get("foto") as File | null;
     const nomeAutore = formData.get("nome_autore") as string | null;
@@ -26,6 +30,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await foto.arrayBuffer());
     fs.writeFileSync(path.join(uploadDir, filename), buffer);
 
+    const { getDb, saveDb } = await import("@/lib/local-db");
     const db = await getDb();
     db.run(
       "INSERT INTO foto (filename, nome_autore, commento) VALUES (?, ?, ?)",
@@ -35,7 +40,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("POST /api/upload error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

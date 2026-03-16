@@ -1,55 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/local-db";
-import type { Database, BindParams } from "sql.js";
-
-function queryAll(db: Database, sql: string, params: unknown[] = []) {
-  const stmt = db.prepare(sql);
-  if (params.length) stmt.bind(params as BindParams);
-  const rows: Record<string, unknown>[] = [];
-  while (stmt.step()) {
-    const columns = stmt.getColumnNames();
-    const values = stmt.get();
-    const row: Record<string, unknown> = {};
-    columns.forEach((col, i) => { row[col] = values[i]; });
-    rows.push(row);
-  }
-  stmt.free();
-  return rows;
-}
-
-function queryOne(db: Database, sql: string, params: unknown[] = []) {
-  const rows = queryAll(db, sql, params);
-  return rows[0] || null;
-}
+import { proxyToBackend } from "@/lib/api-proxy";
 
 export async function GET(req: NextRequest) {
+  const proxied = await proxyToBackend(req, "invito.php");
+  if (proxied) return proxied;
+
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get("token");
-
     if (!token) {
       return NextResponse.json({ error: "Token mancante" }, { status: 400 });
     }
 
+    const { getDb } = await import("@/lib/local-db");
     const db = await getDb();
 
-    const invito = queryOne(db,
-      "SELECT id, token, nome_gruppo, note FROM inviti WHERE token = ?",
-      [token]
-    );
-
-    if (!invito) {
+    const s1 = db.prepare("SELECT id, token, nome_gruppo, note FROM inviti WHERE token = ?");
+    s1.bind([token]);
+    if (!s1.step()) {
+      s1.free();
       return NextResponse.json({ error: "Invito non trovato" }, { status: 404 });
     }
+    const cols1 = s1.getColumnNames();
+    const vals1 = s1.get();
+    const invito: Record<string, unknown> = {};
+    cols1.forEach((col, i) => { invito[col] = vals1[i]; });
+    s1.free();
 
-    const invitati = queryAll(db,
-      "SELECT id, nome, genere, confermato FROM invitati WHERE invito_id = ?",
-      [invito.id as number]
-    );
+    const s2 = db.prepare("SELECT id, nome, genere, confermato FROM invitati WHERE invito_id = ?");
+    s2.bind([invito.id as number]);
+    const invitati: Record<string, unknown>[] = [];
+    while (s2.step()) {
+      const c = s2.getColumnNames();
+      const v = s2.get();
+      const row: Record<string, unknown> = {};
+      c.forEach((col, i) => { row[col] = v[i]; });
+      invitati.push(row);
+    }
+    s2.free();
 
     return NextResponse.json({ invito, invitati });
   } catch (err) {
-    console.error("GET /api/invito error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

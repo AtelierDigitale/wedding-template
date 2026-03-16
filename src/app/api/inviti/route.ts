@@ -1,16 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb, saveDb } from "@/lib/local-db";
-import crypto from "crypto";
-import type { Database, BindParams } from "sql.js";
+import { proxyToBackend } from "@/lib/api-proxy";
 
 function checkAuth(req: NextRequest): boolean {
   const auth = req.headers.get("authorization");
   return auth === "Bearer admin";
 }
 
-function queryAll(db: Database, sql: string, params: unknown[] = []) {
+async function getLocalDb() {
+  const { getDb } = await import("@/lib/local-db");
+  return getDb();
+}
+
+async function localSaveDb() {
+  const { saveDb } = await import("@/lib/local-db");
+  saveDb();
+}
+
+function queryAll(db: import("sql.js").Database, sql: string, params: unknown[] = []) {
   const stmt = db.prepare(sql);
-  if (params.length) stmt.bind(params as BindParams);
+  if (params.length) stmt.bind(params as import("sql.js").BindParams);
   const rows: Record<string, unknown>[] = [];
   while (stmt.step()) {
     const columns = stmt.getColumnNames();
@@ -23,18 +31,21 @@ function queryAll(db: Database, sql: string, params: unknown[] = []) {
   return rows;
 }
 
-function queryOne(db: Database, sql: string, params: unknown[] = []) {
+function queryOne(db: import("sql.js").Database, sql: string, params: unknown[] = []) {
   const rows = queryAll(db, sql, params);
   return rows[0] || null;
 }
 
 export async function GET(req: NextRequest) {
+  const proxied = await proxyToBackend(req, "inviti.php");
+  if (proxied) return proxied;
+
   try {
     if (!checkAuth(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getDb();
+    const db = await getLocalDb();
     const { searchParams } = new URL(req.url);
 
     if (searchParams.get("id")) {
@@ -57,7 +68,6 @@ export async function GET(req: NextRequest) {
           (SELECT COUNT(*) FROM invitati WHERE confermato = 0) as rifiutati,
           (SELECT COUNT(*) FROM invitati WHERE confermato IS NULL) as in_attesa`
       );
-
       const perGruppo = queryAll(db,
         `SELECT g.id, g.nome,
           (SELECT COUNT(*) FROM inviti WHERE gruppo_id = g.id) as totale_inviti,
@@ -67,7 +77,6 @@ export async function GET(req: NextRequest) {
           (SELECT COUNT(*) FROM invitati inv JOIN inviti i ON inv.invito_id = i.id WHERE i.gruppo_id = g.id AND inv.confermato IS NULL) as in_attesa
          FROM gruppi g ORDER BY g.nome`
       );
-
       const senzaGruppo = queryOne(db,
         `SELECT
           (SELECT COUNT(*) FROM inviti WHERE gruppo_id IS NULL) as totale_inviti,
@@ -76,7 +85,6 @@ export async function GET(req: NextRequest) {
           (SELECT COUNT(*) FROM invitati inv JOIN inviti i ON inv.invito_id = i.id WHERE i.gruppo_id IS NULL AND inv.confermato = 0) as rifiutati,
           (SELECT COUNT(*) FROM invitati inv JOIN inviti i ON inv.invito_id = i.id WHERE i.gruppo_id IS NULL AND inv.confermato IS NULL) as in_attesa`
       );
-
       return NextResponse.json({ ...totals, per_gruppo: perGruppo, senza_gruppo: senzaGruppo });
     }
 
@@ -103,18 +111,21 @@ export async function GET(req: NextRequest) {
     );
     return NextResponse.json(inviti);
   } catch (err) {
-    console.error("GET /api/inviti error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
+  const proxied = await proxyToBackend(req, "inviti.php");
+  if (proxied) return proxied;
+
   try {
     if (!checkAuth(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getDb();
+    const crypto = await import("crypto");
+    const db = await getLocalDb();
     const body = await req.json();
     const { nome_gruppo, gruppo_id, invitati, note } = body;
 
@@ -123,7 +134,6 @@ export async function POST(req: NextRequest) {
     }
 
     const token = crypto.randomBytes(16).toString("hex");
-
     db.run("INSERT INTO inviti (token, nome_gruppo, gruppo_id, note) VALUES (?, ?, ?, ?)",
       [token, nome_gruppo, gruppo_id || null, note || null]);
 
@@ -146,21 +156,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    saveDb();
+    await localSaveDb();
     return NextResponse.json({ id: invitoId, token });
   } catch (err) {
-    console.error("POST /api/inviti error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
+  const proxied = await proxyToBackend(req, "inviti.php");
+  if (proxied) return proxied;
+
   try {
     if (!checkAuth(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getDb();
+    const db = await getLocalDb();
     const body = await req.json();
     const { id, nome_gruppo, gruppo_id, invitati, note } = body;
 
@@ -171,18 +183,14 @@ export async function PUT(req: NextRequest) {
     db.run("UPDATE inviti SET nome_gruppo = ?, gruppo_id = ?, note = ? WHERE id = ?",
       [nome_gruppo, gruppo_id || null, note || null, id]);
 
-    const existing = queryAll(db,
-      "SELECT id, nome FROM invitati WHERE invito_id = ?", [id]
-    );
+    const existing = queryAll(db, "SELECT id, nome FROM invitati WHERE invito_id = ?", [id]);
     const existingIds = existing.map((e) => e.id as number);
-
     const newInvitati = invitati as { id?: number; nome: string; genere?: string }[];
     const keptIds: number[] = [];
 
     for (const inv of newInvitati) {
       const trimmed = inv.nome.trim();
       if (!trimmed) continue;
-
       if (inv.id) {
         db.run("UPDATE invitati SET nome = ?, genere = ? WHERE id = ? AND invito_id = ?",
           [trimmed, inv.genere || "M", inv.id, id]);
@@ -199,21 +207,23 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    saveDb();
+    await localSaveDb();
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("PUT /api/inviti error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
+  const proxied = await proxyToBackend(req, "inviti.php");
+  if (proxied) return proxied;
+
   try {
     if (!checkAuth(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getDb();
+    const db = await getLocalDb();
     const body = await req.json();
     const { id } = body;
 
@@ -223,10 +233,9 @@ export async function DELETE(req: NextRequest) {
 
     db.run("DELETE FROM invitati WHERE invito_id = ?", [id]);
     db.run("DELETE FROM inviti WHERE id = ?", [id]);
-    saveDb();
+    await localSaveDb();
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("DELETE /api/inviti error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
