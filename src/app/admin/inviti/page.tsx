@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface Gruppo {
@@ -31,6 +31,14 @@ interface InvitatoDetail {
 }
 
 export default function AdminInvitiPage() {
+  return (
+    <Suspense>
+      <AdminInvitiContent />
+    </Suspense>
+  );
+}
+
+function AdminInvitiContent() {
   const searchParams = useSearchParams();
   const [inviti, setInviti] = useState<Invito[]>([]);
   const [gruppi, setGruppi] = useState<Gruppo[]>([]);
