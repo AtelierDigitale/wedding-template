@@ -16,6 +16,7 @@ function saveDb() {
 async function initDb(): Promise<SqlJsDatabase> {
   const wasmPath = path.join(process.cwd(), "node_modules", "sql.js", "dist", "sql-wasm.wasm");
   const wasmBinary = fs.readFileSync(wasmPath);
+  // @ts-expect-error Buffer vs ArrayBuffer type mismatch in sql.js typings
   const SQL = await initSqlJs({ wasmBinary });
 
   if (fs.existsSync(DB_PATH)) {
