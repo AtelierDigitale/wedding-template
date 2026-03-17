@@ -47,10 +47,24 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Read body BEFORE proxy to avoid stream consumption issues
-  const bodyText = await req.text();
-  const proxied = await proxyToBackend(req, "gruppi.php", bodyText);
-  if (proxied) return proxied;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (apiUrl && apiUrl !== "local") {
+    // Production: proxy directly to SiteGround
+    const bodyText = await req.text();
+    const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": req.headers.get("authorization") || "",
+      },
+      body: bodyText,
+    });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   if (!checkAuth(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,7 +72,7 @@ export async function POST(req: NextRequest) {
   try {
     const { getDb, saveDb } = await import("@/lib/local-db");
     const db = await getDb();
-    const { nome } = JSON.parse(bodyText);
+    const { nome } = await req.json();
     if (!nome || !nome.trim()) {
       return NextResponse.json({ error: "Nome mancante" }, { status: 400 });
     }
