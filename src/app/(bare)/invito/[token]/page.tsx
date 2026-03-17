@@ -159,9 +159,6 @@ export default function InvitoPage() {
           <h1 className="mt-4 font-heading text-2xl text-marrone">
             Ci dispiace ma recupereremo presto!
           </h1>
-          <p className="mt-4 text-sm text-grigio">
-            29 Agosto 2026 · Ca&apos; Ross, Formigine
-          </p>
         </div>
       </div>
     );
