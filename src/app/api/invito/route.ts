@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { proxyToBackend } from "@/lib/api-proxy";
 
 export async function GET(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "invito.php");
-  if (proxied) return proxied;
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (apiUrl && apiUrl !== "local") {
+    const url = new URL(req.url);
+    const qs = url.search || "";
+    const res = await fetch(`${apiUrl}/siteground-api/api/invito.php${qs}`, {
+      method: "GET",
+      headers: {
+        "Authorization": req.headers.get("authorization") || "",
+      },
+    });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const { searchParams } = new URL(req.url);

@@ -1,9 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { proxyToBackend } from "@/lib/api-proxy";
 
 export async function POST(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "upload.php");
-  if (proxied) return proxied;
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (apiUrl && apiUrl !== "local") {
+    const body = await req.arrayBuffer();
+    const res = await fetch(`${apiUrl}/siteground-api/api/upload.php`, {
+      method: "POST",
+      headers: {
+        "Content-Type": req.headers.get("content-type") || "",
+        "Authorization": req.headers.get("authorization") || "",
+      },
+      body: body,
+    });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const { v4: uuidv4 } = await import("uuid");

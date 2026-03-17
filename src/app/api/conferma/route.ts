@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { proxyToBackend } from "@/lib/api-proxy";
 
 export async function POST(req: NextRequest) {
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const bodyText = await req.text();
-  const proxied = await proxyToBackend(req, "conferma.php", bodyText);
-  if (proxied) return proxied;
+  if (apiUrl && apiUrl !== "local") {
+    const res = await fetch(`${apiUrl}/siteground-api/api/conferma.php`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": req.headers.get("authorization") || "",
+      },
+      body: bodyText,
+    });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const body = JSON.parse(bodyText);

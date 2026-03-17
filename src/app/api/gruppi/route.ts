@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { proxyToBackend } from "@/lib/api-proxy";
 
 function checkAuth(req: NextRequest): boolean {
   const auth = req.headers.get("authorization");
@@ -24,8 +23,22 @@ async function localQueryAll(sql: string, params: unknown[] = []) {
 }
 
 export async function GET(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "gruppi.php");
-  if (proxied) return proxied;
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (apiUrl && apiUrl !== "local") {
+    const url = new URL(req.url);
+    const qs = url.search || "";
+    const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php${qs}`, {
+      method: "GET",
+      headers: {
+        "Authorization": req.headers.get("authorization") || "",
+      },
+    });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   if (!checkAuth(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,7 +62,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   if (apiUrl && apiUrl !== "local") {
-    // Production: proxy directly to SiteGround
     const bodyText = await req.text();
     const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php`, {
       method: "POST",
@@ -89,9 +101,23 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const bodyText = await req.text();
-  const proxied = await proxyToBackend(req, "gruppi.php", bodyText);
-  if (proxied) return proxied;
+  if (apiUrl && apiUrl !== "local") {
+    const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": req.headers.get("authorization") || "",
+      },
+      body: bodyText,
+    });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   if (!checkAuth(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -112,9 +138,23 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const bodyText = await req.text();
-  const proxied = await proxyToBackend(req, "gruppi.php", bodyText);
-  if (proxied) return proxied;
+  if (apiUrl && apiUrl !== "local") {
+    const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": req.headers.get("authorization") || "",
+      },
+      body: bodyText,
+    });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   if (!checkAuth(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
