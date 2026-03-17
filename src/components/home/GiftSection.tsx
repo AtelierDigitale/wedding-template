@@ -10,11 +10,10 @@ export default function GiftSection() {
 
         <p className="mt-4 text-base opacity-90">
           Se ti fa piacere puoi contribuire a rendere il nostro sogno un po&apos;
-          più concreto. Qual è? Un camper e un po&apos; di tempo a disposizione
-          per trasformarci in una famiglia a quattro ruote e viaggiare alla
-          scoperta dell&apos;Europa e… perché no? Anche più in là! E mostrare
-          all&apos;Angie che, tutto sommato, il mondo può essere anche un bel
-          posto! Ti terremo aggiornato 😊
+          più concreto. Qual è? Un camper per trasformarci in una famiglia a
+          quattro ruote e viaggiare alla scoperta dell&apos;Europa e… perché no?
+          Anche più in là! E mostrare all&apos;Angie che, tutto sommato, il mondo
+          può essere anche un bel posto! Ti terremo aggiornato 😊
         </p>
 
         <div className="mt-6 rounded-xl bg-white/15 p-5">
