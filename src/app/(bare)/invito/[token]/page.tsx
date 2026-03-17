@@ -22,7 +22,7 @@ interface InvitoData {
   invitati: Invitato[];
 }
 
-type Status = "loading" | "open" | "confirmed" | "error";
+type Status = "loading" | "open" | "confirmed" | "declined" | "error";
 
 function getTitolo(invitati: Invitato[]): string {
   if (invitati.length === 1) {
@@ -65,11 +65,12 @@ export default function InvitoPage() {
       })
       .then((d: InvitoData) => {
         setData(d);
-        const allConfirmed = d.invitati.every(
+        const allAnswered = d.invitati.every(
           (inv) => inv.confermato !== null
         );
-        if (allConfirmed) {
-          setStatus("confirmed");
+        if (allAnswered) {
+          const allDeclined = d.invitati.every((inv) => inv.confermato === 0);
+          setStatus(allDeclined ? "declined" : "confirmed");
         } else {
           setStatus("open");
           const initial: Record<number, boolean | null> = {};
@@ -116,7 +117,8 @@ export default function InvitoPage() {
       setData(d);
       const allDone = d.invitati.every((inv) => inv.confermato !== null);
       if (allDone) {
-        setStatus("confirmed");
+        const allDeclined = d.invitati.every((inv) => inv.confermato === 0);
+        setStatus(allDeclined ? "declined" : "confirmed");
       } else {
         // Reset responses for remaining pending
         const updated: Record<number, boolean | null> = {};
@@ -144,6 +146,22 @@ export default function InvitoPage() {
         <div>
           <p className="text-4xl">😕</p>
           <p className="mt-4 text-lg text-grigio">Invito non trovato</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "declined") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-crema px-4 text-center">
+        <div>
+          <p className="text-6xl">😢</p>
+          <h1 className="mt-4 font-heading text-2xl text-marrone">
+            Ci dispiace ma recupereremo presto!
+          </h1>
+          <p className="mt-4 text-sm text-grigio">
+            29 Agosto 2026 · Ca&apos; Ross, Formigine
+          </p>
         </div>
       </div>
     );
