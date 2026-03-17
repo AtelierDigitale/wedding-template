@@ -8,7 +8,6 @@ export function checkIsLocal() {
   return !url || url === "local";
 }
 
-// Keep for backward compat
 export const isLocal = checkIsLocal();
 
 /**
@@ -25,34 +24,36 @@ export async function proxyToBackend(
   const url = new URL(req.url);
   const destination = `${apiUrl}/siteground-api/api/${phpFile}${url.search}`;
 
-  const headers: Record<string, string> = {
-    "Content-Type": req.headers.get("content-type") || "application/json",
-  };
+  const headers: Record<string, string> = {};
+  const contentType = req.headers.get("content-type");
+  if (contentType) headers["Content-Type"] = contentType;
   const auth = req.headers.get("authorization");
   if (auth) headers["Authorization"] = auth;
 
-  const isMultipart = (req.headers.get("content-type") || "").includes("multipart/form-data");
-
+  // Clone the body from the request
   let body: BodyInit | null = null;
   if (req.method !== "GET" && req.method !== "HEAD") {
-    if (isMultipart) {
-      body = await req.arrayBuffer();
-      // Keep original content-type with boundary
-      headers["Content-Type"] = req.headers.get("content-type") || "";
-    } else {
-      body = await req.text();
-    }
+    // Use clone() to ensure the body stream hasn't been consumed
+    body = await req.clone().arrayBuffer();
+    if (!contentType) headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(destination, {
-    method: req.method,
-    headers,
-    body,
-  });
+  try {
+    const res = await fetch(destination, {
+      method: req.method,
+      headers,
+      body,
+    });
 
-  const data = await res.text();
-  return new NextResponse(data, {
-    status: res.status,
-    headers: { "Content-Type": res.headers.get("content-type") || "application/json" },
-  });
+    const data = await res.text();
+    return new NextResponse(data, {
+      status: res.status,
+      headers: { "Content-Type": res.headers.get("content-type") || "application/json" },
+    });
+  } catch (e) {
+    return new NextResponse(JSON.stringify({ error: `Proxy error: ${e}` }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
