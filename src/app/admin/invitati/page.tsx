@@ -90,8 +90,7 @@ export default function AdminInvitatiPage() {
             <tr className="border-b border-beige text-left text-sm text-grigio">
               <th className="w-12 px-4 py-4 text-center font-medium">#</th>
               <th className="px-6 py-4 font-medium">Nome</th>
-              <th className="px-6 py-4 font-medium">Invito</th>
-              <th className="hidden px-6 py-4 font-medium sm:table-cell">Gruppo</th>
+              <th className="px-6 py-4 font-medium">Gruppo</th>
               <th className="px-6 py-4 font-medium">Stato</th>
             </tr>
           </thead>
@@ -103,9 +102,6 @@ export default function AdminInvitatiPage() {
                 <td className="px-6 py-4 text-sm text-grigio">
                   {inv.nome_gruppo}
                 </td>
-                <td className="hidden px-6 py-4 text-sm text-grigio sm:table-cell">
-                  {inv.gruppo || "-"}
-                </td>
                 <td className="px-6 py-4">
                   <Badge confermato={inv.confermato} />
                 </td>
@@ -113,7 +109,7 @@ export default function AdminInvitatiPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-grigio">
+                <td colSpan={4} className="px-6 py-8 text-center text-grigio">
                   Nessun invitato trovato
                 </td>
               </tr>
