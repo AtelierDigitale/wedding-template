@@ -205,13 +205,6 @@ export default function InvitoPage() {
         {getSubtitle(data?.invitati ?? [])}
       </p>
 
-      <div className="mt-6 text-center">
-        <p className="font-heading text-xl text-marrone">Ascolta la versione audio dell&apos;invito</p>
-        <audio controls className="mt-3" preload="none">
-          <source src="/angie.mp3" type="audio/mpeg" />
-        </audio>
-      </div>
-
       <div className="mt-8 w-full max-w-md rounded-2xl bg-white p-6 shadow-sm">
         {/* Already confirmed invitati */}
         {confirmedInvitati.length > 0 && (
