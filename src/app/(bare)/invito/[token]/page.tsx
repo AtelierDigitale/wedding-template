@@ -177,8 +177,8 @@ export default function InvitoPage() {
       <Image
         src="/logo.png"
         alt="Logo Marcella e Francesco"
-        width={196}
-        height={196}
+        width={225}
+        height={225}
         className="rounded-full"
         priority
       />
