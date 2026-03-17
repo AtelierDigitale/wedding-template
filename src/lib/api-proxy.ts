@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function getApiUrl() {
-  return process.env.NEXT_PUBLIC_API_URL || "";
+  return process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "";
 }
 
 export function checkIsLocal() {

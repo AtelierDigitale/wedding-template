@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   if (apiUrl && apiUrl !== "local") {
     // Production: proxy directly to SiteGround
     const bodyText = await req.text();
