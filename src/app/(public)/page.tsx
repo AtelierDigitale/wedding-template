@@ -14,7 +14,7 @@ export default function HomePage() {
       <TimelineSection />
 
       <div className="mx-auto mt-10 flex flex-col items-center text-center">
-        <p className="font-heading text-2xl text-marrone">Ascolta il programma della giornata</p>
+        <p className="font-heading text-4xl text-marrone">Ascolta il programma della giornata :)</p>
         <audio controls className="mt-3" preload="none">
           <source src="/angie.mp3" type="audio/mpeg" />
         </audio>
