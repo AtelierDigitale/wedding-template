@@ -47,7 +47,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "gruppi.php");
+  // Read body BEFORE proxy to avoid stream consumption issues
+  const bodyText = await req.text();
+  const proxied = await proxyToBackend(req, "gruppi.php", bodyText);
   if (proxied) return proxied;
 
   if (!checkAuth(req)) {
@@ -56,7 +58,7 @@ export async function POST(req: NextRequest) {
   try {
     const { getDb, saveDb } = await import("@/lib/local-db");
     const db = await getDb();
-    const { nome } = await req.json();
+    const { nome } = JSON.parse(bodyText);
     if (!nome || !nome.trim()) {
       return NextResponse.json({ error: "Nome mancante" }, { status: 400 });
     }
@@ -73,7 +75,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "gruppi.php");
+  const bodyText = await req.text();
+  const proxied = await proxyToBackend(req, "gruppi.php", bodyText);
   if (proxied) return proxied;
 
   if (!checkAuth(req)) {
@@ -82,7 +85,7 @@ export async function PUT(req: NextRequest) {
   try {
     const { getDb, saveDb } = await import("@/lib/local-db");
     const db = await getDb();
-    const { id, nome } = await req.json();
+    const { id, nome } = JSON.parse(bodyText);
     if (!id || !nome || !nome.trim()) {
       return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
     }
@@ -95,7 +98,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "gruppi.php");
+  const bodyText = await req.text();
+  const proxied = await proxyToBackend(req, "gruppi.php", bodyText);
   if (proxied) return proxied;
 
   if (!checkAuth(req)) {
@@ -104,7 +108,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const { getDb, saveDb } = await import("@/lib/local-db");
     const db = await getDb();
-    const { id } = await req.json();
+    const { id } = JSON.parse(bodyText);
     if (!id) {
       return NextResponse.json({ error: "ID mancante" }, { status: 400 });
     }

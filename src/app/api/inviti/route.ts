@@ -116,7 +116,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "inviti.php");
+  const bodyText = await req.text();
+  const proxied = await proxyToBackend(req, "inviti.php", bodyText);
   if (proxied) return proxied;
 
   try {
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
 
     const crypto = await import("crypto");
     const db = await getLocalDb();
-    const body = await req.json();
+    const body = JSON.parse(bodyText);
     const { nome_gruppo, gruppo_id, invitati, note } = body;
 
     if (!nome_gruppo || !invitati || !Array.isArray(invitati) || invitati.length === 0) {
@@ -164,7 +165,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "inviti.php");
+  const bodyText = await req.text();
+  const proxied = await proxyToBackend(req, "inviti.php", bodyText);
   if (proxied) return proxied;
 
   try {
@@ -173,7 +175,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const db = await getLocalDb();
-    const body = await req.json();
+    const body = JSON.parse(bodyText);
     const { id, nome_gruppo, gruppo_id, invitati, note } = body;
 
     if (!id || !nome_gruppo || !invitati || !Array.isArray(invitati) || invitati.length === 0) {
@@ -215,7 +217,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "inviti.php");
+  const bodyText = await req.text();
+  const proxied = await proxyToBackend(req, "inviti.php", bodyText);
   if (proxied) return proxied;
 
   try {
@@ -224,7 +227,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const db = await getLocalDb();
-    const body = await req.json();
+    const body = JSON.parse(bodyText);
     const { id } = body;
 
     if (!id) {

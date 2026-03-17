@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { proxyToBackend } from "@/lib/api-proxy";
 
 export async function POST(req: NextRequest) {
-  const proxied = await proxyToBackend(req, "conferma.php");
+  const bodyText = await req.text();
+  const proxied = await proxyToBackend(req, "conferma.php", bodyText);
   if (proxied) return proxied;
 
   try {
-    const body = await req.json();
+    const body = JSON.parse(bodyText);
     const { invitati } = body;
     if (!invitati || !Array.isArray(invitati)) {
       return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
