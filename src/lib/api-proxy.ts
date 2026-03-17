@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-export const isLocal = !API_URL || API_URL === "local";
+export function getApiUrl() {
+  return process.env.NEXT_PUBLIC_API_URL || "";
+}
+export function checkIsLocal() {
+  const url = getApiUrl();
+  return !url || url === "local";
+}
+
+// Keep for backward compat
+export const isLocal = checkIsLocal();
 
 /**
  * In production, proxy the request to SiteGround PHP backend.
@@ -11,10 +19,11 @@ export async function proxyToBackend(
   req: NextRequest,
   phpFile: string
 ): Promise<NextResponse | null> {
-  if (isLocal) return null;
+  const apiUrl = getApiUrl();
+  if (!apiUrl || apiUrl === "local") return null;
 
   const url = new URL(req.url);
-  const destination = `${API_URL}/siteground-api/api/${phpFile}${url.search}`;
+  const destination = `${apiUrl}/siteground-api/api/${phpFile}${url.search}`;
 
   const headers: Record<string, string> = {
     "Content-Type": req.headers.get("content-type") || "application/json",
