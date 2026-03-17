@@ -1,10 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "(not set)";
+  return NextResponse.json({ apiUrl });
+}
 
-  // Test POST to SiteGround directly
-  let postTest = "skipped";
+export async function POST(req: NextRequest) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "(not set)";
+
+  // Read the body
+  const bodyText = await req.text();
+
+  // Try to proxy it manually
+  let result = "skipped";
   try {
     const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php`, {
       method: "POST",
@@ -12,12 +20,12 @@ export async function GET() {
         "Content-Type": "application/json",
         "Authorization": "Bearer admin",
       },
-      body: JSON.stringify({ nome: "DebugTest" }),
+      body: bodyText,
     });
-    postTest = `status=${res.status}, body=${await res.text()}`;
+    result = `status=${res.status}, body=${await res.text()}`;
   } catch (e) {
-    postTest = `error: ${e}`;
+    result = `error: ${e}`;
   }
 
-  return NextResponse.json({ apiUrl, postTest });
+  return NextResponse.json({ apiUrl, bodyReceived: bodyText, proxyResult: result });
 }
