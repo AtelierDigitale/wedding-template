@@ -167,6 +167,13 @@ export default function InvitoPage() {
           >
             Guarda il programma della giornata
           </Link>
+
+          <div className="mt-8 text-center">
+            <p className="font-heading text-xl text-marrone">Ascolta la versione audio dell&apos;invito</p>
+            <audio controls className="mt-3" preload="none">
+              <source src="/angie.mp3" type="audio/mpeg" />
+            </audio>
+          </div>
         </div>
       </div>
     );
@@ -288,6 +295,13 @@ export default function InvitoPage() {
       >
         Guarda il programma della giornata
       </Link>
+
+      <div className="mt-8 text-center">
+        <p className="font-heading text-xl text-marrone">Ascolta la versione audio dell&apos;invito</p>
+        <audio controls className="mt-3" preload="none">
+          <source src="/angie.mp3" type="audio/mpeg" />
+        </audio>
+      </div>
     </div>
   );
 }
