@@ -32,12 +32,21 @@ export default function AdminInvitatiPage() {
       .catch(() => {});
   }, []);
 
-  const filtered = invitati.filter((inv) => {
-    if (filter === "confermati") return inv.confermato === 1;
-    if (filter === "rifiutati") return inv.confermato === 0;
-    if (filter === "attesa") return inv.confermato === null;
-    return true;
-  });
+  const filtered = invitati
+    .filter((inv) => {
+      if (filter === "confermati") return inv.confermato === 1;
+      if (filter === "rifiutati") return inv.confermato === 0;
+      if (filter === "attesa") return inv.confermato === null;
+      return true;
+    })
+    .sort((a, b) => {
+      if (filter === "confermati" || filter === "rifiutati") {
+        const dateA = a.confirmed_at ? new Date(a.confirmed_at).getTime() : Infinity;
+        const dateB = b.confirmed_at ? new Date(b.confirmed_at).getTime() : Infinity;
+        return dateA - dateB;
+      }
+      return 0;
+    });
 
   const counts = {
     tutti: invitati.length,
