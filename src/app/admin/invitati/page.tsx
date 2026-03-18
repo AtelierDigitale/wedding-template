@@ -100,7 +100,7 @@ export default function AdminInvitatiPage() {
                 <td className="w-12 px-4 py-4 text-center text-sm text-grigio">{idx + 1}</td>
                 <td className="px-6 py-4 font-semibold">{inv.nome}</td>
                 <td className="px-6 py-4 text-sm text-grigio">
-                  {inv.nome_gruppo}
+                  {inv.gruppo || "-"}
                 </td>
                 <td className="px-6 py-4">
                   <Badge confermato={inv.confermato} />
