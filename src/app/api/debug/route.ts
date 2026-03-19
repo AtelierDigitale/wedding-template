@@ -36,5 +36,19 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json({ apiUrl, postResult, getResult });
+  // Debug auth env vars (masked)
+  const u = process.env.ADMIN_USERNAME || "(not set)";
+  const p = process.env.ADMIN_PASSWORD || "(not set)";
+
+  return NextResponse.json({
+    apiUrl,
+    postResult,
+    getResult,
+    auth_debug: {
+      username: u.length > 2 ? u[0] + "***" + u[u.length - 1] : u,
+      username_length: u.length,
+      password: p.length > 2 ? p[0] + "***" + p[p.length - 1] : p,
+      password_length: p.length,
+    },
+  });
 }
