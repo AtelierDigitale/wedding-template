@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyFetch } from "@/lib/proxy-fetch";
 
 export async function GET() {
   const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
@@ -7,7 +8,7 @@ export async function GET() {
   let postResult = "skipped";
   if (apiUrl && apiUrl !== "local") {
     try {
-      const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php`, {
+      const res = await proxyFetch(`${apiUrl}/api/gruppi.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -25,7 +26,7 @@ export async function GET() {
   let getResult = "skipped";
   if (apiUrl && apiUrl !== "local") {
     try {
-      const res = await fetch(`${apiUrl}/siteground-api/api/gruppi.php`, {
+      const res = await proxyFetch(`${apiUrl}/api/gruppi.php`, {
         method: "GET",
         headers: { "Authorization": "Bearer admin" },
       });

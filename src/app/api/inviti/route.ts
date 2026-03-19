@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyFetch } from "@/lib/proxy-fetch";
 
 function checkAuth(req: NextRequest): boolean {
   const auth = req.headers.get("authorization");
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
   if (apiUrl && apiUrl !== "local") {
     const url = new URL(req.url);
     const qs = url.search || "";
-    const res = await fetch(`${apiUrl}/siteground-api/api/inviti.php${qs}`, {
+    const res = await proxyFetch(`${apiUrl}/api/inviti.php${qs}`, {
       method: "GET",
       headers: {
         "Authorization": req.headers.get("authorization") || "",
@@ -132,7 +133,7 @@ export async function POST(req: NextRequest) {
   const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const bodyText = await req.text();
   if (apiUrl && apiUrl !== "local") {
-    const res = await fetch(`${apiUrl}/siteground-api/api/inviti.php`, {
+    const res = await proxyFetch(`${apiUrl}/api/inviti.php`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -195,7 +196,7 @@ export async function PUT(req: NextRequest) {
   const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const bodyText = await req.text();
   if (apiUrl && apiUrl !== "local") {
-    const res = await fetch(`${apiUrl}/siteground-api/api/inviti.php`, {
+    const res = await proxyFetch(`${apiUrl}/api/inviti.php`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -261,7 +262,7 @@ export async function DELETE(req: NextRequest) {
   const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const bodyText = await req.text();
   if (apiUrl && apiUrl !== "local") {
-    const res = await fetch(`${apiUrl}/siteground-api/api/inviti.php`, {
+    const res = await proxyFetch(`${apiUrl}/api/inviti.php`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

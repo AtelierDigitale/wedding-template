@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyFetch } from "@/lib/proxy-fetch";
 
 export async function GET(req: NextRequest) {
   const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   if (apiUrl && apiUrl !== "local") {
     const url = new URL(req.url);
     const qs = url.search || "";
-    const res = await fetch(`${apiUrl}/siteground-api/api/gallery.php${qs}`, {
+    const res = await proxyFetch(`${apiUrl}/api/gallery.php${qs}`, {
       method: "GET",
       headers: {
         "Authorization": req.headers.get("authorization") || "",

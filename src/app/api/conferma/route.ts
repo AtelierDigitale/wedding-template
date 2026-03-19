@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyFetch } from "@/lib/proxy-fetch";
 
 export async function POST(req: NextRequest) {
   const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const bodyText = await req.text();
   if (apiUrl && apiUrl !== "local") {
-    const res = await fetch(`${apiUrl}/siteground-api/api/conferma.php`, {
+    const res = await proxyFetch(`${apiUrl}/api/conferma.php`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
