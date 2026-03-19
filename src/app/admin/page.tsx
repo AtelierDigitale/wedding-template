@@ -20,33 +20,43 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
-    if (ruolo === "sposi") {
-      fetch("/api/inviti?stats=1", {
-        headers: { Authorization: "Bearer admin" },
+    fetch("/api/inviti?stats=1", {
+      headers: { Authorization: "Bearer admin" },
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error("Fetch failed");
+        return r.json();
       })
-        .then((r) => {
-          if (!r.ok) throw new Error("Fetch failed");
-          return r.json();
-        })
-        .then(setStats)
-        .catch(() => {});
-    }
-  }, [ruolo]);
+      .then(setStats)
+      .catch(() => {});
+  }, []);
 
   return (
     <AdminGuard>
       <div className="mx-auto max-w-4xl px-4 py-6">
         <h1 className="font-heading text-3xl text-marrone md:text-4xl">Dashboard</h1>
 
-        {/* Stats inviti — solo sposi */}
-        {ruolo === "sposi" && (
+        {/* Stats inviti */}
+        {ruolo === "sposi" ? (
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-            <StatBox label="Inviti" value={stats?.totale_inviti ?? "-"} color="text-marrone" />
+            <StatBox label="Invitati" value={stats?.totale_invitati ?? "-"} color="text-marrone" />
             <StatBox label="Confermati" value={stats?.confermati ?? "-"} color="text-verde" />
             <StatBox label="Non vengono" value={stats?.rifiutati ?? "-"} color="text-rosa" />
             <StatBox label="In attesa" value={stats?.in_attesa ?? "-"} color="text-grigio" />
           </div>
-        )}
+        ) : ruolo === "planner" ? (
+          <div className="mt-6">
+            <div className="rounded-2xl bg-white p-5 shadow-sm">
+              <p className="text-sm text-grigio">Invitati confermati</p>
+              <p className="mt-1 text-3xl font-bold text-verde">
+                {stats?.confermati ?? "-"}
+                <span className="ml-2 text-base font-normal text-grigio">
+                  / {stats?.totale_invitati ?? "-"}
+                </span>
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         {/* Quick actions */}
         <div className="mt-6 grid gap-3 md:grid-cols-2">
