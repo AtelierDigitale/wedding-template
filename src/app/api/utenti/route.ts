@@ -132,6 +132,60 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Local: change password
+  if (action === "change-password") {
+    try {
+      const body = JSON.parse(bodyText);
+      const { username, old_password, new_password } = body;
+      if (!username || !old_password || !new_password) {
+        return NextResponse.json({ error: "Dati mancanti" }, { status: 400 });
+      }
+      if (new_password.length < 6) {
+        return NextResponse.json(
+          { error: "La nuova password deve avere almeno 6 caratteri" },
+          { status: 400 }
+        );
+      }
+
+      const { getDb, saveDb } = await import("@/lib/local-db");
+      const bcrypt = await import("bcryptjs");
+      const db = await getDb();
+
+      const stmt = db.prepare(
+        "SELECT id, password_hash FROM utenti WHERE username = ?"
+      );
+      stmt.bind([username]);
+      if (!stmt.step()) {
+        stmt.free();
+        return NextResponse.json(
+          { error: "Utente non trovato" },
+          { status: 404 }
+        );
+      }
+      const cols = stmt.getColumnNames();
+      const vals = stmt.get();
+      const user: Record<string, unknown> = {};
+      cols.forEach((col, i) => { user[col] = vals[i]; });
+      stmt.free();
+
+      const valid = await bcrypt.compare(old_password, user.password_hash as string);
+      if (!valid) {
+        return NextResponse.json(
+          { error: "Password attuale non corretta" },
+          { status: 401 }
+        );
+      }
+
+      const newHash = await bcrypt.hash(new_password, 10);
+      db.run("UPDATE utenti SET password_hash = ? WHERE id = ?", [newHash, user.id as number]);
+      saveDb();
+
+      return NextResponse.json({ ok: true });
+    } catch (err) {
+      return NextResponse.json({ error: String(err) }, { status: 500 });
+    }
+  }
+
   // Local: create user
   if (!checkAuth(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

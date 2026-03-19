@@ -106,6 +106,17 @@ export default function AdminSidebar() {
             ))}
 
             <Link
+              href="/admin/profilo"
+              onClick={() => setMenuOpen(false)}
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm ${
+                isActive("/admin/profilo") ? "bg-marrone/10 font-semibold text-marrone" : "text-testo"
+              }`}
+            >
+              <span className="text-lg">⚙</span>
+              Cambia password
+            </Link>
+
+            <Link
               href="/"
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-grigio"
@@ -166,6 +177,17 @@ export default function AdminSidebar() {
 
         {/* Footer */}
         <div className="border-t border-beige px-3 py-4">
+          <Link
+            href="/admin/profilo"
+            className={`mb-1 flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors ${
+              isActive("/admin/profilo")
+                ? "bg-marrone/10 font-semibold text-marrone"
+                : "text-grigio hover:bg-beige"
+            }`}
+          >
+            <span className="text-lg">⚙</span>
+            Cambia password
+          </Link>
           <Link
             href="/"
             className="mb-1 flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-grigio hover:bg-beige"

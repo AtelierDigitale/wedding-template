@@ -33,6 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               id: String(user.id),
               name: user.nome || user.username,
               email: user.ruolo,
+              image: user.username, // store username in image field
             };
           } else {
             // Local: call our own API endpoint
@@ -58,6 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               id: String(user.id),
               name: user.nome || user.username,
               email: user.ruolo,
+              image: user.username,
             };
           }
         } catch {
@@ -71,16 +73,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.ruolo = user.email;
         token.userId = user.id;
+        token.username = user.image; // username stored in image field
       }
       return token;
     },
     session({ session, token }) {
       if (session.user) {
         session.user.email = token.ruolo as string;
+        session.user.image = token.username as string;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const user = session.user as any;
         user.ruolo = token.ruolo;
         user.userId = token.userId;
+        user.username = token.username;
       }
       return session;
     },

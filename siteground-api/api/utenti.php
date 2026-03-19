@@ -40,6 +40,36 @@ if ($method === 'POST' && $action === 'login') {
     ]);
 }
 
+// POST /api/utenti.php?action=change-password — Change password (requires old password)
+if ($method === 'POST' && $action === 'change-password') {
+    $body = jsonBody();
+    $username = trim($body['username'] ?? '');
+    $oldPassword = $body['old_password'] ?? '';
+    $newPassword = $body['new_password'] ?? '';
+
+    if (!$username || !$oldPassword || !$newPassword) {
+        json(['error' => 'Dati mancanti'], 400);
+    }
+
+    if (strlen($newPassword) < 6) {
+        json(['error' => 'La nuova password deve avere almeno 6 caratteri'], 400);
+    }
+
+    $stmt = $pdo->prepare("SELECT id, password_hash FROM utenti WHERE username = ?");
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+
+    if (!$user || !password_verify($oldPassword, $user['password_hash'])) {
+        json(['error' => 'Password attuale non corretta'], 401);
+    }
+
+    $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("UPDATE utenti SET password_hash = ? WHERE id = ?");
+    $stmt->execute([$newHash, $user['id']]);
+
+    json(['ok' => true]);
+}
+
 // All other actions require auth
 if (!auth()) {
     json(['error' => 'Unauthorized'], 401);
