@@ -26,6 +26,71 @@ async function initDb(): Promise<SqlJsDatabase> {
     db = new SQL.Database();
   }
 
+  db.run(`CREATE TABLE IF NOT EXISTS utenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    ruolo TEXT NOT NULL CHECK(ruolo IN ('sposi', 'planner')),
+    nome TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS categorie_preventivo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    icona TEXT DEFAULT NULL,
+    ordine INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS preventivi (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    categoria_id INTEGER NOT NULL,
+    fornitore TEXT NOT NULL,
+    descrizione TEXT,
+    prezzo REAL NOT NULL,
+    note TEXT,
+    scelto INTEGER DEFAULT 0,
+    created_by INTEGER NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (categoria_id) REFERENCES categorie_preventivo(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES utenti(id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS preventivi_allegati (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    preventivo_id INTEGER NOT NULL,
+    filename TEXT NOT NULL,
+    original_name TEXT,
+    tipo TEXT,
+    uploaded_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (preventivo_id) REFERENCES preventivi(id) ON DELETE CASCADE
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS spese (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    categoria_id INTEGER DEFAULT NULL,
+    preventivo_id INTEGER DEFAULT NULL,
+    descrizione TEXT NOT NULL,
+    importo REAL NOT NULL,
+    stato TEXT DEFAULT 'da_pagare' CHECK(stato IN ('da_pagare', 'acconto', 'saldato')),
+    nota TEXT,
+    manuale INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (categoria_id) REFERENCES categorie_preventivo(id) ON DELETE SET NULL,
+    FOREIGN KEY (preventivo_id) REFERENCES preventivi(id) ON DELETE SET NULL
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS commenti (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tipo TEXT NOT NULL CHECK(tipo IN ('preventivo', 'categoria', 'generale')),
+    riferimento_id INTEGER DEFAULT NULL,
+    utente_id INTEGER NOT NULL,
+    testo TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (utente_id) REFERENCES utenti(id)
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS gruppi (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL UNIQUE,

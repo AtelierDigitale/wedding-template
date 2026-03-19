@@ -33,7 +33,7 @@ interface InvitatoDetail {
 
 export default function AdminInvitiPage() {
   return (
-    <AdminGuard>
+    <AdminGuard allowedRoles={["sposi"]}>
       <Suspense>
         <AdminInvitiContent />
       </Suspense>

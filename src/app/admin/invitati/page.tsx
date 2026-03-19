@@ -17,7 +17,7 @@ type Filter = "tutti" | "confermati" | "rifiutati" | "attesa";
 
 export default function AdminInvitatiPage() {
   return (
-    <AdminGuard>
+    <AdminGuard allowedRoles={["sposi"]}>
       <AdminInvitatiContent />
     </AdminGuard>
   );

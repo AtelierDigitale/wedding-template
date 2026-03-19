@@ -8,17 +8,58 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      authorize(credentials) {
-        if (
-          credentials?.username === process.env.ADMIN_USERNAME &&
-          credentials?.password === process.env.ADMIN_PASSWORD
-        ) {
-          return { id: "1", name: "Admin" };
+      async authorize(credentials) {
+        const username = credentials?.username as string;
+        const password = credentials?.password as string;
+        if (!username || !password) return null;
+
+        try {
+          // Call our own API to verify credentials against DB
+          const baseUrl =
+            process.env.NEXTAUTH_URL ||
+            process.env.AUTH_URL ||
+            "http://localhost:3000";
+          const res = await fetch(`${baseUrl}/api/utenti?action=login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+
+          if (!res.ok) return null;
+
+          const user = await res.json();
+          if (!user || !user.id) return null;
+
+          return {
+            id: String(user.id),
+            name: user.nome || user.username,
+            email: user.ruolo, // We store ruolo in email field to pass it through JWT
+          };
+        } catch {
+          return null;
         }
-        return null;
       },
     }),
   ],
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+        token.ruolo = user.email; // ruolo was stored in email field
+        token.userId = user.id;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user) {
+        session.user.email = token.ruolo as string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const user = session.user as any;
+        user.ruolo = token.ruolo;
+        user.userId = token.userId;
+      }
+      return session;
+    },
+  },
   pages: {
     signIn: "/admin/login",
   },
