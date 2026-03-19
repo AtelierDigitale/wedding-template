@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import AdminGuard from "@/components/AdminGuard";
 
 interface Gruppo {
   id: number;
@@ -32,9 +33,11 @@ interface InvitatoDetail {
 
 export default function AdminInvitiPage() {
   return (
-    <Suspense>
-      <AdminInvitiContent />
-    </Suspense>
+    <AdminGuard>
+      <Suspense>
+        <AdminInvitiContent />
+      </Suspense>
+    </AdminGuard>
   );
 }
 

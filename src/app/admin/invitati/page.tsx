@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import AdminGuard from "@/components/AdminGuard";
 
 interface Invitato {
   id: number;
@@ -15,6 +16,14 @@ interface Invitato {
 type Filter = "tutti" | "confermati" | "rifiutati" | "attesa";
 
 export default function AdminInvitatiPage() {
+  return (
+    <AdminGuard>
+      <AdminInvitatiContent />
+    </AdminGuard>
+  );
+}
+
+function AdminInvitatiContent() {
   const [invitati, setInvitati] = useState<Invitato[]>([]);
   const [filter, setFilter] = useState<Filter>("tutti");
 

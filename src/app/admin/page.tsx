@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import AdminGuard from "@/components/AdminGuard";
 
 interface GruppoStats {
   id: number;
@@ -45,6 +46,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
+    <AdminGuard>
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-4xl text-marrone">Dashboard</h1>
@@ -151,6 +153,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
     </div>
+    </AdminGuard>
   );
 }
 
