@@ -65,7 +65,7 @@ export default function PreventiviPage() {
       <div className="mx-auto max-w-4xl px-4 py-6">
         <div className="flex items-center justify-between">
           <h1 className="font-heading text-3xl text-marrone">Preventivi</h1>
-          {ruolo === "planner" && (
+          {(
             <button
               onClick={() => setShowForm(!showForm)}
               className="rounded-full bg-marrone px-5 py-2 text-sm text-white active:opacity-80"
@@ -76,7 +76,7 @@ export default function PreventiviPage() {
         </div>
 
         {/* Form nuova categoria */}
-        {showForm && ruolo === "planner" && (
+        {showForm && (
           <form onSubmit={handleCreate} className="mt-4 flex gap-2">
             <input
               type="text"
@@ -102,9 +102,7 @@ export default function PreventiviPage() {
             <div className="py-16 text-center">
               <p className="text-5xl">📋</p>
               <p className="mt-4 text-grigio">
-                {ruolo === "planner"
-                  ? "Nessuna categoria. Crea la prima!"
-                  : "La wedding planner non ha ancora creato categorie."}
+                {"Nessuna categoria. Crea la prima!"}
               </p>
             </div>
           ) : (
@@ -132,7 +130,7 @@ export default function PreventiviPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {ruolo === "planner" && (
+                  {(
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(cat.id); }}
                       className="rounded-full px-3 py-1 text-sm text-rosa active:bg-rosa/10"

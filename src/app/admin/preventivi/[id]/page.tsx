@@ -171,18 +171,16 @@ export default function CategoriaDettaglioPage() {
 
         <div className="mt-3 flex items-center justify-between">
           <h1 className="font-heading text-3xl text-marrone">{categoriaNome || "..."}</h1>
-          {ruolo === "planner" && (
-            <button
-              onClick={() => { if (showForm) resetForm(); else setShowForm(true); }}
-              className="rounded-full bg-marrone px-5 py-2 text-sm text-white active:opacity-80"
-            >
-              {showForm ? "Chiudi" : "+ Preventivo"}
-            </button>
-          )}
+          <button
+            onClick={() => { if (showForm) resetForm(); else setShowForm(true); }}
+            className="rounded-full bg-marrone px-5 py-2 text-sm text-white active:opacity-80"
+          >
+            {showForm ? "Chiudi" : "+ Preventivo"}
+          </button>
         </div>
 
         {/* Form crea/modifica preventivo */}
-        {showForm && ruolo === "planner" && (
+        {showForm && (
           <form
             onSubmit={editingId ? handleUpdate : handleCreate}
             className="mt-4 space-y-3 rounded-2xl bg-white p-5 shadow-sm"
@@ -248,9 +246,7 @@ export default function CategoriaDettaglioPage() {
             <div className="py-12 text-center">
               <p className="text-4xl">📝</p>
               <p className="mt-3 text-grigio">
-                {ruolo === "planner"
-                  ? "Nessun preventivo. Aggiungine uno!"
-                  : "La wedding planner non ha ancora inserito preventivi per questa categoria."}
+                {"Nessun preventivo. Aggiungine uno!"}
               </p>
             </div>
           ) : (
@@ -293,7 +289,7 @@ export default function CategoriaDettaglioPage() {
 
                 {/* Azioni */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {/* Sposi: scegli/descegli */}
+                  {/* Scegli/descegli — solo sposi */}
                   {ruolo === "sposi" && !prev.scelto && (
                     <button
                       onClick={() => handleScegli(prev.id)}
@@ -311,23 +307,19 @@ export default function CategoriaDettaglioPage() {
                     </button>
                   )}
 
-                  {/* Planner: modifica/elimina */}
-                  {ruolo === "planner" && (
-                    <>
-                      <button
-                        onClick={() => startEdit(prev)}
-                        className="rounded-full bg-marrone/10 px-4 py-2 text-sm text-marrone active:opacity-80"
-                      >
-                        Modifica
-                      </button>
-                      <button
-                        onClick={() => handleDelete(prev.id)}
-                        className="rounded-full bg-rosa/10 px-4 py-2 text-sm text-rosa active:opacity-80"
-                      >
-                        Elimina
-                      </button>
-                    </>
-                  )}
+                  {/* Modifica/elimina — tutti */}
+                  <button
+                    onClick={() => startEdit(prev)}
+                    className="rounded-full bg-marrone/10 px-4 py-2 text-sm text-marrone active:opacity-80"
+                  >
+                    Modifica
+                  </button>
+                  <button
+                    onClick={() => handleDelete(prev.id)}
+                    className="rounded-full bg-rosa/10 px-4 py-2 text-sm text-rosa active:opacity-80"
+                  >
+                    Elimina
+                  </button>
                 </div>
               </div>
             ))
