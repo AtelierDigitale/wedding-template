@@ -13,28 +13,53 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const password = credentials?.password as string;
         if (!username || !password) return null;
 
+        const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+
         try {
-          // Call our own API to verify credentials against DB
-          const baseUrl =
-            process.env.NEXTAUTH_URL ||
-            process.env.AUTH_URL ||
-            "http://localhost:3000";
-          const res = await fetch(`${baseUrl}/api/utenti?action=login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
-          });
+          if (apiUrl && apiUrl !== "local") {
+            // Production: call PHP backend directly
+            const res = await fetch(`${apiUrl}/api/utenti.php?action=login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password }),
+            });
 
-          if (!res.ok) return null;
+            if (!res.ok) return null;
 
-          const user = await res.json();
-          if (!user || !user.id) return null;
+            const user = await res.json();
+            if (!user || !user.id) return null;
 
-          return {
-            id: String(user.id),
-            name: user.nome || user.username,
-            email: user.ruolo, // We store ruolo in email field to pass it through JWT
-          };
+            return {
+              id: String(user.id),
+              name: user.nome || user.username,
+              email: user.ruolo,
+            };
+          } else {
+            // Local: call our own API endpoint
+            const baseUrl =
+              process.env.NEXTAUTH_URL ||
+              process.env.AUTH_URL ||
+              "http://localhost:3000";
+            const res = await fetch(
+              `${baseUrl}/api/utenti?action=login`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+              }
+            );
+
+            if (!res.ok) return null;
+
+            const user = await res.json();
+            if (!user || !user.id) return null;
+
+            return {
+              id: String(user.id),
+              name: user.nome || user.username,
+              email: user.ruolo,
+            };
+          }
         } catch {
           return null;
         }
@@ -44,7 +69,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        token.ruolo = user.email; // ruolo was stored in email field
+        token.ruolo = user.email;
         token.userId = user.id;
       }
       return token;
