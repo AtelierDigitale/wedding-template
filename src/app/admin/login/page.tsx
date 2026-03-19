@@ -15,16 +15,23 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError("");
 
-    const result = await signIn("credentials", {
-      username,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl: "/admin",
+      });
 
-    if (result?.error) {
-      setError("Credenziali non valide");
-    } else {
-      router.push("/admin");
+      if (result?.error) {
+        setError("Credenziali non valide");
+      } else if (result?.url) {
+        router.push(result.url);
+      } else {
+        router.push("/admin");
+      }
+    } catch {
+      setError("Errore di connessione");
     }
   }
 
